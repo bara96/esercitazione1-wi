@@ -13,13 +13,18 @@ def extract_page(page_hmtl):
     content = page_soup.find('div').get_text(strip=True)
     return title, content
 
-news_dir = 'news'
-connection = urllib.urlopen('http://ricerca.repubblica.it/repubblica/topic/luoghi/i/italia')
+#inizializza connessione e variabili
+news_dir = 'news/'
+path = {}
+news = {}
+connection = urllib.urlopen('http://ricerca.repubblica.it/')
 dom = lxml.html.fromstring(connection.read())
 
-if not os.path.dirname(news_dir):
+#controlla/crea directory news
+if not os.path.isdir(news_dir):
     os.makedirs(news_dir)
 
+#apre URLS.txt in scrittura, legge dal dom (sito) la pagina e scrive su URLS tutti gli href chhe trova
 with open("URLS.txt", "w") as f:
     num_urls = 0
     for link in dom.xpath('//a/@href'): # select the url in href for all a tags(links)
@@ -27,31 +32,34 @@ with open("URLS.txt", "w") as f:
         num_urls = num_urls+1
     f.close()
 
+#apre URLS e legge i link
 with open('URLS.txt', "r") as f:
     urls = [f.readline().strip() for _ in range(num_urls)]
+    f.close()
 
-path = {}
-
-for url in urls: #crea i file
-  filename = re.sub('[^a-zA-Z0-9]', '-', url)
-  filepath = os.path.join(news_dir, filename)
-  path[url] = filepath
-
-if not os.path.exists(filepath):
-    print ('Scaricando {}'.format(url))
-    urllib.urlretrieve(url, filepath)
-    time.sleep(1)
-
-news = {}
-
-for (url, filepath) in path.items():
-    with io.open(filepath, encoding='utf-8') as f:
+for url in urls: #crea i file dagli url
+    filename = re.sub('[^a-zA-Z0-9]', '', url)
+    filepath = os.path.join(news_dir, filename)
+    path[url] = filepath
+    if not os.path.exists(filepath):
         try:
-            title, content = extract_page(f.read())
+            print ('Scaricando {}'.format(url))
+            urllib.urlretrieve(url, filepath)
+            time.sleep(1)
         except Exception as e:
-            print 'Unexpected page structure!\n{}\n{}\n{}\n'.format(e.message, url, filepath)
+            print str(e)
             continue
-    text = u'{}\n{}'.format(title," "+ content)
-    news[url] = text
 
-#print (news[urls[num_urls-1]])
+#legge i file da
+for (url, filepath) in path.items():
+    try:
+        with io.open(filepath, encoding='utf-8') as f:
+            title, content = extract_page(f.read())
+            text = u'{}\n{}'.format(title, content)
+            news[url] = text
+    except Exception as e:
+        print str(e)
+        continue
+
+for file in news:
+    print (file)
