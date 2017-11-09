@@ -1,28 +1,27 @@
-import StringIO
+import io
 import os
 import re
 import time
 import urllib
 import bs4
-import io
 import lxml.html
-import codecs
 from bs4 import BeautifulSoup
 
 
 class ParteA:
     # inizializza connessione e variabili
-    def __init__(self):
+    def __init__(self, url):
         self.news_dir = 'newsReuters/'
-        #self.news_title = list()
-        #self.news_content = list()
+        # self.news_title = list()
+        # self.news_content = list()
         self.path = {}
         self.num_urls = 0
+        self.url = url
 
     def extract_page(self, page_hmtl):
-        page_soup = bs4.BeautifulSoup(page_hmtl, 'html.parser')
+        # page_soup = bs4.BeautifulSoup(page_hmtl, 'html.parser')
         soup = BeautifulSoup(page_hmtl, 'html.parser')
-        #head = page_soup.find('div', class_='header-content')
+        # head = page_soup.find('div', class_='header-content')
         title = soup.title.string
         content = ""
         for p in soup.find("div").findAll("p"):
@@ -35,7 +34,7 @@ class ParteA:
         if not os.path.isdir(self.news_dir):
             os.makedirs(self.news_dir)
 
-        connection = urllib.urlopen('http://www.reuters.com/')
+        connection = urllib.urlopen(self.url)
         dom = lxml.html.fromstring(connection.read())
         # apre URLS.txt in scrittura, legge dal dom (sito) la pagina e scrive su URLS tutti gli href che trova
         with open("URLS.txt", "w") as f:
@@ -55,7 +54,7 @@ class ParteA:
             f.close()
         return urls
 
-    #scarica le pagine dagli URLS e le salva nella cartella news
+    # scarica le pagine dagli URLS e le salva nella cartella news
     def page_downolader(self):
         urls = self.URLS_reader()
         for url in urls:
@@ -81,9 +80,9 @@ class ParteA:
                     with io.open(filepath, encoding='utf-8') as f:
                         title, content = self.extract_page(f.read())
                         dati.write(str(i)+") "+str(title)+"\n")
-                        #print "titolo: " + str(title)
+                        # print "titolo: " + str(title)
                         dati.write(str(content)+"\n")
-                        #print "contenuto: " + str(content)
+                        # print "contenuto: " + str(content)
                         i = i + 1
                     f.close()
             except Exception as e:
