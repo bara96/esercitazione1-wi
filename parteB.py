@@ -6,11 +6,12 @@ import plotly as py
 
 class ParteB:
     # inizializza connessione e variabili
-    def __init__(self):
+    def __init__(self, grafico):    # grafico = sceglie se visualizzare o no il grafico
         self.dictionary = defaultdict(int)
         self.frequentsWords = {}
         self.modifiedWords = list()
         self.stopWords = list()
+        self.grafici = grafico
 
     # parte B1, legge il file e costruisce un dizionario delle parole trovate
     def readFile(self):
@@ -72,6 +73,7 @@ class ParteB:
         self.readFile()
         self.findWords()
         self.deleteStopWords()
-        self.plotGraph(self.frequentsWords, "Istogramma frequenza")
-        self.plotGraph(self.modifiedWords, "Istogramma frequenza modificato")
+        if self.grafici:
+            self.plotGraph(self.frequentsWords, "Istogramma frequenza")
+            self.plotGraph(self.modifiedWords, "Istogramma frequenza modificato")
 

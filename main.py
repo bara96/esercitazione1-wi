@@ -10,5 +10,6 @@ if c == 1:
     parteA = ParteA('http://www.reuters.com/resources/archive/us/20171101.html')
     parteA.main()
 if c == 2:
-    parteB = ParteB()
+    parteB = ParteB(True)
     parteB.main()
+
