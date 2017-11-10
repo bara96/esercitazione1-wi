@@ -12,8 +12,6 @@ class ParteA:
     # inizializza connessione e variabili
     def __init__(self, url):
         self.news_dir = 'news/'
-        # self.news_title = list()
-        # self.news_content = list()
         self.path = {}
         self.num_urls = 0
         self.url = url
@@ -85,9 +83,7 @@ class ParteA:
                             #print("Leggendo file da {}...".format(filepath))
                             title, content = self.extract_page(f.read())
                             dati.write(str(i)+") "+str(title)+"\n")
-                            # print "titolo: " + str(title)
                             dati.write(str(content)+"\n")
-                            # print "contenuto: " + str(content)
                             i = i + 1
                             f.close()
                 except Exception as e:
