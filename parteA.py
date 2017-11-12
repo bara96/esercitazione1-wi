@@ -10,13 +10,25 @@ from bs4 import BeautifulSoup
 
 class ParteA:
     # inizializza connessione e variabili
-    def __init__(self, url):
-        self.news_dir = 'news/'
+    def __init__(self, origin_url, download_directory, filenameData, auto_download, download_limit):
+        # nome della cartella in cui salvare i dati
+        self.download_directory = download_directory
+        # nome del file in cui salvare dati
+        self.filenameData = filenameData
+        # conterra percorso delle pagine scariate
         self.path = {}
+        # numero di url saricati
         self.num_urls = 0
-        self.url = url
+        # url 'origine' da cui scaricare
+        self.origin_url = origin_url
+        # url 'origine' da cui scaricare
+        self.urls = list()
+        # true = scarica tutte le sottopagine da  origin_url, false = imposta una lista di pagine da scaricare su urls
+        self.auto_download = auto_download
+        # limita il download a n pagine
+        self.download_limit = download_limit
 
-    def extract_page(self, page_hmtl):
+    def extractPage(self, page_hmtl):
         # page_soup = bs4.BeautifulSoup(page_hmtl, 'html.parser')
         soup = BeautifulSoup(page_hmtl, 'html.parser')
         # head = page_soup.find('div', class_='header-content')
@@ -28,11 +40,9 @@ class ParteA:
         return title, content
 
     # costruisce il file URLS
-    def URLS_maker(self):
+    def urlsMaker(self):
         # controlla/crea directory
-        if not os.path.isdir(self.news_dir):
-            os.makedirs(self.news_dir)
-        connection = urllib.urlopen(self.url)
+        connection = urllib.urlopen(self.origin_url)
         dom = lxml.html.fromstring(connection.read())
         # apre URLS.txt in scrittura, legge dal dom (sito) la pagina e scrive su URLS tutti gli href che trova
         with open("URLS.txt", "w") as f:
@@ -45,7 +55,7 @@ class ParteA:
             f.close()
 
     #  legge il file URLS e restituisce gli url letti
-    def URLS_reader(self):
+    def urlsReader(self):
         with open('URLS.txt', "r") as f:
             print("Leggendo file 'URLS.txt'...")
             urls = [f.readline().strip() for _ in range(self.num_urls)]
@@ -53,35 +63,35 @@ class ParteA:
         return urls
 
     # scarica le pagine dagli URLS e le salva nella cartella news
-    def page_downolader(self):
-        urls = self.URLS_reader()
-        limit = 1000
+    def pageDownolader(self, urls):
+        if not os.path.isdir(self.download_directory):
+            os.makedirs(self.download_directory)
         for url in urls:
-            if limit == 0:
+            if self.download_limit <= 0:
                 break
             filename = re.sub('[^a-zA-Z0-9]', '', url)
-            filepath = os.path.join(self.news_dir, filename)
+            filepath = os.path.join(self.download_directory, filename)
             self.path[url] = filepath
             if not os.path.exists(filepath):
                 try:
                     print ('Scaricando {}...'.format(url))
                     urllib.urlretrieve(url, filepath)
-                    limit -= 1
-                    time.sleep(0.1)
+                    self.download_limit -= 1
+                    time.sleep(0.2)
                 except Exception as e:
                     print str(e)
 
     # legge i file dalla cartella e scrive su file titolo e contenuto
-    def data_writer(self):
-        i = 0
-        with open("dati_salvati.txt", "w") as dati:
-            print("Scrivendo file 'dati_salvati.txt'...")
+    def dataWriter(self):
+        i = 1
+        with open(self.filenameData, "w") as dati:
+            print("Scrivendo file {}...".format(self.filenameData))
             for (url, filepath) in self.path.items():
                 try:
                     if os.path.exists(filepath):
                         with io.open(filepath, encoding='utf-8') as f:
                             #print("Leggendo file da {}...".format(filepath))
-                            title, content = self.extract_page(f.read())
+                            title, content = self.extractPage(f.read())
                             dati.write(str(i)+") "+str(title)+"\n")
                             dati.write(str(content)+"\n")
                             i = i + 1
@@ -91,7 +101,22 @@ class ParteA:
             dati.close()
 
     # parte A1-A2
-    def main(self):
-        self.URLS_maker()
-        self.page_downolader()
-        self.data_writer()
+    def exe(self):
+        if self.auto_download:
+            self.urlsMaker()
+            self.urls = self.urlsReader()
+        self.pageDownolader(self.urls)
+        self.dataWriter()
+
+    def getUrls(self):
+        return self.urls
+
+    def setUrls(self, urls):
+        self.urls = urls
+
+    def setOriginUrl(self):
+        return self.origin_url
+
+    def setOriginUrls(self, origin_url):
+        self.origin_url = origin_url
+
