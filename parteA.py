@@ -10,11 +10,11 @@ from bs4 import BeautifulSoup
 
 class ParteA:
     # inizializza connessione e variabili
-    def __init__(self, origin_url, download_directory, filenameData, auto_download, download_limit):
+    def __init__(self, origin_url="http://www.reuters.com/resources/archive/us/20171101.html", download_directory="news/", filename_data="dati_salvati.txt", auto_download=True, download_limit=1000):
         # nome della cartella in cui salvare i dati
         self.download_directory = download_directory
         # nome del file in cui salvare dati
-        self.filenameData = filenameData
+        self.filenameData = filename_data
         # conterra percorso delle pagine scariate
         self.path = {}
         # numero di url saricati
@@ -50,17 +50,29 @@ class ParteA:
             self.num_urls = 0
             for link in dom.xpath('//a/@href'):  # select the url in href for all a tags(links)
                 if not link.find("article") == -1:
-                   f.write(link + "\n")
+                    if not link.find("http") == -1:
+                        f.write(link + "\n")
+                    else:
+                        f.write("http://www.reuters.com"+link + "\n")
                 self.num_urls = self.num_urls + 1
             f.close()
 
     #  legge il file URLS e restituisce gli url letti
-    def urlsReader(self):
+    def urlsReader(self, numUrls):
         with open('URLS.txt', "r") as f:
             print("Leggendo file 'URLS.txt'...")
-            urls = [f.readline().strip() for _ in range(self.num_urls)]
+            urls = [f.readline().strip() for _ in range(numUrls)]
             f.close()
         return urls
+
+    def urlsCount(self):
+        n = 0
+        with open('URLS.txt', "r") as f:
+            print("Leggendo file 'URLS.txt'...")
+            while f.readline():
+                n += 1
+            f.close()
+        return n
 
     # scarica le pagine dagli URLS e le salva nella cartella news
     def pageDownolader(self, urls):
@@ -81,7 +93,7 @@ class ParteA:
                 except Exception as e:
                     print str(e)
 
-    # legge i file dalla cartella e scrive su file titolo e contenuto
+    # legge i file dalla cartella 'news' e scrive su file titolo e contenuto
     def dataWriter(self):
         i = 1
         with open(self.filenameData, "w") as dati:
@@ -104,7 +116,7 @@ class ParteA:
     def exe(self):
         if self.auto_download:
             self.urlsMaker()
-            self.urls = self.urlsReader()
+            self.urls = self.urlsReader(self.num_urls)
         self.pageDownolader(self.urls)
         self.dataWriter()
 
@@ -119,4 +131,11 @@ class ParteA:
 
     def setOriginUrls(self, origin_url):
         self.origin_url = origin_url
+
+    def getNumUrls(self):
+        return self.num_urls
+
+    def setNumUrls(self, numUrls):
+        self.num_urls = numUrls
+
 
