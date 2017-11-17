@@ -1,10 +1,10 @@
 from parteA import ParteA
 from parteB import ParteB
-from parteC import ParteC
+from parteB3 import ParteC
 
 c = 0
 while not(c == 1 or c == 2 or c == 3):
-    c = input("1)ParteA 2)ParteB 3)ParteC \n")
+    c = input("1)ParteA 2)ParteB 3)ParteB3 \n")
 
 if c == 1:
     # archivio notizie: http://www.reuters.com/resources/archive/us/

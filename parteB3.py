@@ -119,6 +119,11 @@ class ParteC:
         key_tf = self.tf_calculation(self.keyWords)
         key_norm = self.normalize(key_tf, self.vectorLength_calculation(key_tf))
         wordsNormList = self.calculate(self.wordsFreqList)
-        print self.cos_distance(key_norm, wordsNormList[0])
-        print wordsNormList
-        print self.urlList
+        suggest = dict()
+        for i in range(0, len(wordsNormList)-1):
+            suggest[self.urlList[i]] = self.cos_distance(key_norm, wordsNormList[i])
+        best_suggest = sorted(suggest.items(), key=operator.itemgetter(1)) # ordino per coseni
+
+        print "suggerimenti migliori trovati: "
+        for i in range(len(best_suggest)-11, len(best_suggest)-1):
+            print best_suggest[i]
