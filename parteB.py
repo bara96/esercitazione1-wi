@@ -7,23 +7,23 @@ import plotly as py
 class ParteB:
     # inizializza variabili
     def __init__(self, filename_data="dati_salvati.txt", filename_frequent="parole_frequenti.txt", filename_frequent_modified="parole_modificate.txt", show_graph=True, lemmatize=True):    # grafico = sceglie se visualizzare o no il grafico
-        # nomi dei file in cui salvare dati e frequenze
-        self.filenameData = filename_data
-        self.filenameFrequent1 = filename_frequent
-        self.filenameFrequent2 = filename_frequent_modified
+        # nomi dei file in cui leggere / salvare dati e frequenze
+        self.filename_data = filename_data
+        self.filename_frequent1 = filename_frequent
+        self.filename_frequent2 = filename_frequent_modified
         # dizionari e liste
         self.dictionary = defaultdict(int)
-        self.frequentsWords = {}
-        self.modifiedWords = list()
-        self.stopWords = list()
+        self.frequents_words = {}
+        self.modified_words = list()
+        self.stop_words = list()
         # boolean per visualizzare o no il grafico e per lemmatizzar o no le parole frequenti
-        self.showGraph = show_graph
+        self.show_graph = show_graph
         self.lemmatize = lemmatize
 
     # parte B1, legge il file e costruisce un dizionario delle parole trovate
     def readFile(self):
-        with open(self.filenameData, "r") as f:
-            print("Leggendo il file {}...".format(self.filenameData))
+        with open(self.filename_data, "r") as f:
+            print("Leggendo il file {}...".format(self.filename_data))
             for line in f.readlines():
                 for word in line.split():
                         if not re.sub('[^a-zA-Z0-9]', '', word) is "":
@@ -32,13 +32,13 @@ class ParteB:
 
     # trova le 500 parole piu frequenti e le scrive su file con la loro frequenza
     def findWords(self):
-        self.frequentsWords = sorted(self.dictionary.iteritems(), key=lambda x: int(x[1]))
-        self.frequentsWords.reverse()
-        while len(self.frequentsWords) > 500:
-            self.frequentsWords.pop()
-        with open(self.filenameFrequent1, "w") as f:
-            print("Scrivendo file {}...".format(self.filenameFrequent1))
-            for word in self.frequentsWords:
+        self.frequents_words = sorted(self.dictionary.iteritems(), key=lambda x: int(x[1]))
+        self.frequents_words.reverse()
+        while len(self.frequents_words) > 500:
+            self.frequents_words.pop()
+        with open(self.filename_frequent1, "w") as f:
+            print("Scrivendo file {}...".format(self.filename_frequent1))
+            for word in self.frequents_words:
                 f.write(word[0] + " " + str(word[1]) + "\n")
             f.close()
 
@@ -48,18 +48,18 @@ class ParteB:
             print("Leggendo file 'stopwords-en.txt'...")
             for line in f.readlines():
                 for word in line.split():
-                    self.stopWords.append(word)         # salva le stopWords lette
+                    self.stop_words.append(word)         # salva le stopWords lette
             f.close()
-        with open(self.filenameFrequent2, "w") as f:
-            print("Scrivendo file {}...".format(self.filenameFrequent2))
-            for word in self.frequentsWords:
-                if not(word[0] in self.stopWords):
+        with open(self.filename_frequent2, "w") as f:
+            print("Scrivendo file {}...".format(self.filename_frequent2))
+            for word in self.frequents_words:
+                if not(word[0] in self.stop_words):
                     if not(u''.join(lem(word[0])).encode('utf-8').strip() is ""):
                         if lemmatize:
-                            self.modifiedWords.append((u''.join(lem(word[0])).encode('utf-8').strip(), word[1]))
+                            self.modified_words.append((u''.join(lem(word[0])).encode('utf-8').strip(), word[1]))
                             f.write(u''.join(lem(word[0])).encode('utf-8').strip() + " " + str(word[1]) + "\n")   # sostituisce le parole non in stopWords, quelle presenti le ignora
                         else:
-                            self.modifiedWords.append((u''.join(word[0]).encode('utf-8').strip(), word[1]))
+                            self.modified_words.append((u''.join(word[0]).encode('utf-8').strip(), word[1]))
                             f.write(u''.join(word[0]).encode('utf-8').strip() + " " + str(word[1]) + "\n")  # sostituisce le parole non in stopWords, quelle presenti le ignora
             f.close()
 
@@ -84,9 +84,9 @@ class ParteB:
         self.readFile()
         self.findWords()
         self.deleteStopWords(self.lemmatize)
-        if self.showGraph:
-            self.plotGraph(self.frequentsWords, "Istogramma frequenza")
-            self.plotGraph(self.modifiedWords, "Istogramma frequenza modificato")
+        if self.show_graph:
+            self.plotGraph(self.frequents_words, "Istogramma frequenza")
+            self.plotGraph(self.modified_words, "Istogramma frequenza modificato")
 
 
     def getDictionary(self):
@@ -96,13 +96,13 @@ class ParteB:
         self.dictionary = dictionary
 
     def getFrequentsWords(self):
-        return self.frequentsWords
+        return self.frequents_words
 
     def getModifiedWords(self):
-        return self.modifiedWords
+        return self.modified_words
 
     def getStopWords(self):
-        return self.stopWords
+        return self.stop_words
 
     def setStopWords(self, stopWords):
-        self.stopWords = stopWords
+        self.stop_words = stopWords

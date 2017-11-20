@@ -8,18 +8,18 @@ from plotly.utils import numpy
 from parteA import ParteA
 from parteB import ParteB
 
-class ParteC:
+class ParteB3:
     # inizializza variabili
     def __init__(self, urls):
         self.urls = urls    # i miei 20 url
-        self.numDocs = 0    # numero di documenti su cui si esegue la ricerca
-        self.keyWords = dict()  # key words dei 20 url
-        self.wordsFreqList = list()  # lista dei dizionari con le frequenze delle parole
-        self.urlList = list()   #url corrispondenti a wordsFreqList
-        self.wordsOccurrences = defaultdict(int) # dizionario per contare in quanti documenti appare ogni parola
+        self.num_docs = 0    # numero di documenti su cui si esegue la ricerca
+        self.key_words = dict()  # key words dei 20 url
+        self.words_freq_list = list()  # lista dei dizionari con le frequenze delle parole
+        self.url_list = list()   #url corrispondenti a wordsFreqList
+        self.words_occurrences = defaultdict(int) # dizionario per contare in quanti documenti appare ogni parola
 
     # ricerca nei documenti scaricati le parole chiave, e  restituisce una lista di dizionari (uno per documento) con le orccorrenze delle parole cercate
-    # inoltre aggiorna il docCount tenendo conto in quanti  documenti appaiono le parole
+    # inoltre aggiorna il words_occurrences tenendo conto in quanti  documenti appare ogni parola.
     def countWords(self, words):    # words = dict["word"]:freq
         # searchText = ""
         # for word in words:
@@ -27,8 +27,8 @@ class ParteC:
         # cerca = ParteA("http://www.reuters.com/search/news?blob="+searchText, "search/", "search_dati.txt", True, 10)
         # cerca.exe()
         parteA = ParteA()
-        self.numDocs = parteA.urlsCount()
-        urls = parteA.urlsReader(self.numDocs)
+        self.num_docs = parteA.urlsCount()
+        urls = parteA.urlsReader(self.num_docs)
         path = {}
         for url in urls:    #costruisce le path dagli url
             filename = re.sub('[^a-zA-Z0-9]', '', url)
@@ -48,57 +48,63 @@ class ParteC:
                             n = int(tit.count(word)) + int(con.count(word)) # conto le sue occorrenze nel documento
                             dictionary[word] = n    #la salvo nel dizionario con le sue occorrenze
                             if n > 0:   # se ne ho trovata almeno una
-                                self.wordsOccurrences[word] += 1    # aumento il contatore (conto in quanti documenti appare)
-                        self.urlList.append(url)    # salvo l'url corrispondente
-                        self.wordsFreqList.append(dictionary)   # salvo il dizionario nella lista e passo al prossimo documento
+                                self.words_occurrences[word] += 1    # aumento il contatore (conto in quanti documenti appare)
+                        self.url_list.append(url)    # salvo l'url corrispondente
+                        self.words_freq_list.append(dictionary)   # salvo il dizionario nella lista e passo al prossimo documento
                         f.close()
             except Exception as e:
                 print str(e)
 
-    def tf_calculation(self, words_frequency):  # words_frequency = dict["word"]:freq ,calcola il tf delle parole e restituisce dict[word]=val
+    # words_frequency = dict["word"]:freq ,calcola il tf delle parole e restituisce dict[word]=val
+    def tf_calculation(self, words_frequency, idf):
         tf = dict()
         for (word, freq) in words_frequency.iteritems():
             if freq == 0:
                 tf[word] = 0
             else:
-                tf[word] = round(1 + numpy.log10(freq), 5)
+                tf[word] = round(freq * idf[word], 5)
         return tf
 
-    def idf_calculation(self, df):   # df = dict["word"]:occurrences , restituisce un dizionario dell'idf delle df dict[word]=val
+    # df = dict["word"]:occurrences , restituisce un dizionario dell'idf delle df dict[word]=val
+    def idf_calculation(self, df):
         idf = dict()
         for (word, occurrences) in df.iteritems():
             if occurrences == 0:
                 idf[word] = 0
             else:
-                idf[word] = round(numpy.log10(self.numDocs/occurrences), 5)
+                idf[word] = round(numpy.log10(self.num_docs / occurrences), 5)
         return idf
 
-    def vectorLength_calculation(self, tf): # tf = dict["word"]:freq calcola il vettore corrispondente
+    # tf = dict["word"]:freq calcola il vettore corrispondente
+    def vectorLength_calculation(self, tf):
         vector = 0
         for (word, freq) in tf.iteritems():
             vector += pow(freq, 2)
         return round(sqrt(vector), 5)
 
-    def normalize(self, tf, vector_length): # tf = dict["word"]:freq, int, restituisce il dizionario tf normalizzato
+    # tf = dict["word"]:freq, int, restituisce il dizionario tf normalizzato
+    def normalize(self, tf, vector_length):
         norm = dict()
         for (word, freq) in tf.iteritems():
-            norm[word] = round(freq/vector_length, 5)
+                norm[word] = round(freq/vector_length, 5)
         return norm
 
-    def cos_distance(self, dict1, dict2):   #dict = dict["word"]:freq ,restituisce la distanza a similarita coseno
+    # dict = dict["word"]:freq ,restituisce la distanza a similarita coseno
+    def cos_distance(self, dict1, dict2):
         cos = 0
         for (word, value) in dict1.iteritems():
             cos += round(dict1[word] * dict2[word], 5)
         return cos
 
-
-    def calculate(self, words_freq_list): # words_freq_list = list(dict["word"]:freq) ,restituisce la lista di dizionari con il tf normalizzato
+    # words_freq_list = list(dict["word"]:freq) ,restituisce la lista di dizionari con il tf normalizzato
+    def calculate(self, words_freq_list, idf):
         calc_tf = list()
         for dict in words_freq_list:
-            calc_tf.append(self.tf_calculation(dict))
+            calc_tf.append(self.tf_calculation(dict, idf))
         calc_norm = list()
         for dict in calc_tf:
-            calc_norm.append(self.normalize(dict, self.vectorLength_calculation(dict)))
+            if self.vectorLength_calculation(dict) > 0:  # scarto i documenti con vettore di lunghezza 0, perche' significa che non vi sono elementi chiate nel documento
+                calc_norm.append(self.normalize(dict, self.vectorLength_calculation(dict)))
         return calc_norm
 
     def exe(self):
@@ -112,18 +118,18 @@ class ParteC:
             words.pop()
 
         for word in words:
-            self.keyWords[word[0]] = word[1]
+            self.key_words[word[0]] = word[1]
 
-        self.countWords(self.keyWords)
-        key_idf = self.idf_calculation(self.wordsOccurrences)
-        key_tf = self.tf_calculation(self.keyWords)
+        self.countWords(self.key_words)
+        key_idf = self.idf_calculation(self.words_occurrences)
+        key_tf = self.tf_calculation(self.key_words, key_idf)
         key_norm = self.normalize(key_tf, self.vectorLength_calculation(key_tf))
-        wordsNormList = self.calculate(self.wordsFreqList)
-        suggest = dict()
+        wordsNormList = self.calculate(self.words_freq_list, key_idf)
+        distance = dict()
         for i in range(0, len(wordsNormList)-1):
-            suggest[self.urlList[i]] = self.cos_distance(key_norm, wordsNormList[i])
-        best_suggest = sorted(suggest.items(), key=operator.itemgetter(1)) # ordino per coseni
+            distance[self.url_list[i]] = self.cos_distance(key_norm, wordsNormList[i])
+        suggest = sorted(distance.items(), key=operator.itemgetter(1)) # ordino per coseni
 
         print "suggerimenti migliori trovati: "
-        for i in range(len(best_suggest)-11, len(best_suggest)-1):
-            print best_suggest[i]
+        for i in range(len(suggest)-11, len(suggest)-1):
+            print suggest[i]

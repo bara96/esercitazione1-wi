@@ -14,14 +14,14 @@ class ParteA:
         # nome della cartella in cui salvare i dati
         self.download_directory = download_directory
         # nome del file in cui salvare dati
-        self.filenameData = filename_data
+        self.filename_data = filename_data
         # conterra percorso delle pagine scariate
         self.path = {}
         # numero di url saricati
         self.num_urls = 0
         # url 'origine' da cui scaricare
         self.origin_url = origin_url
-        # url 'origine' da cui scaricare
+        # memorizza tutti gli urls scaricati e scritti sul file URLS
         self.urls = list()
         # true = scarica tutte le sottopagine da  origin_url, false = imposta una lista di pagine da scaricare su urls
         self.auto_download = auto_download
@@ -64,7 +64,7 @@ class ParteA:
             urls = [f.readline().strip() for _ in range(numUrls)]
             f.close()
         return urls
-
+    # conta il numero di url salvati in URLS.txt
     def urlsCount(self):
         n = 0
         with open('URLS.txt', "r") as f:
@@ -96,8 +96,8 @@ class ParteA:
     # legge i file dalla cartella 'news' e scrive su file titolo e contenuto
     def dataWriter(self):
         i = 1
-        with open(self.filenameData, "w") as dati:
-            print("Scrivendo file {}...".format(self.filenameData))
+        with open(self.filename_data, "w") as dati:
+            print("Scrivendo file {}...".format(self.filename_data))
             for (url, filepath) in self.path.items():
                 try:
                     if os.path.exists(filepath):

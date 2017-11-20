@@ -1,10 +1,11 @@
 from parteA import ParteA
 from parteB import ParteB
-from parteB3 import ParteC
+from parteB3 import ParteB3
+from parteC import ParteC
 
 c = 0
-while not(c == 1 or c == 2 or c == 3):
-    c = input("1)ParteA 2)ParteB 3)ParteB3 \n")
+while not(c == 1 or c == 2 or c == 3 or c == 4):
+    c = input("1)ParteA 2)ParteB 3)ParteB3 4)parteC \n")
 
 if c == 1:
     # archivio notizie: http://www.reuters.com/resources/archive/us/
@@ -37,5 +38,9 @@ if c == 3:
     urls20.append("http://www.reuters.com/article/us-science-footprints/fossil-footprints-reveal-existence-of-big-early-dinosaur-predator-idUSKBN1CV3EE")
     urls20.append("http://www.reuters.com/article/us-trump-effect-coal-revival/a-year-after-trumps-election-coals-future-remains-bleak-idUSKBN1DD0IA")
     urls20.append("http://www.reuters.com/article/us-britain-politics-breakingviews/breakingviews-uk-economy-will-share-theresa-mays-pain-idUSKBN1DD1JU")
-    parteC = ParteC(urls20)
+    parteB3 = ParteB3(urls20)
+    parteB3.exe()
+
+if c == 4:
+    parteC = ParteC()
     parteC.exe()
